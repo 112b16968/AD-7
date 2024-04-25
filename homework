@@ -1,0 +1,72 @@
+import pygame
+import random
+import time
+
+pygame.init()
+
+window_size = [400, 400]
+screen = pygame.display.set_mode(window_size)
+black = pygame.color.Color("#000000")
+white = pygame.color.Color("#FFFFFF")
+red = pygame.color.Color("#FF0000")
+
+target_size = 50
+target_x = random.randint(0, window_size[0] - target_size)
+target_y = random.randint(0, window_size[1] - target_size)
+
+score = 0
+font = pygame.font.Font(None, 36)
+
+total_time = 30
+start_time = time.time()
+
+cross_color = white
+cross_width = 2
+cross_length = 10
+cross_x = 0
+cross_y = 0
+
+click_count = 0
+
+done = False
+while not done:
+    screen.fill(black)
+
+    pygame.draw.rect(screen, red, [target_x, target_y, target_size, target_size])
+
+    text = font.render("Score: " + str(score), True, white)
+    screen.blit(text, [10, 10])
+
+    remaining_time = max(0, total_time - (time.time() - start_time))
+    text = font.render("Time: " + str(int(remaining_time)), True, white)
+    text_rect = text.get_rect()
+    text_rect.topright = (window_size[0] - 10, 10)
+    screen.blit(text, text_rect)
+
+    if cross_x != 0 and cross_y != 0:
+        pygame.draw.line(screen, cross_color, [cross_x - cross_length, cross_y], [cross_x + cross_length, cross_y], cross_width)
+        pygame.draw.line(screen, cross_color, [cross_x, cross_y - cross_length], [cross_x, cross_y + cross_length], cross_width)
+
+    pygame.display.flip()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if target_x <= mouse_x <= target_x + target_size and target_y <= mouse_y <= target_y + target_size:
+                score += 1
+                target_x = random.randint(0, window_size[0] - target_size)
+                target_y = random.randint(0, window_size[1] - target_size)
+                cross_x, cross_y = mouse_x, mouse_y
+                cross_length = 10
+                click_count += 1
+                if click_count % 5 == 0:
+                    target_size = max(10, target_size // 2)
+
+    if remaining_time <= 0:
+        done = True
+
+pygame.quit()
+
+print("Score: " + str(score))
